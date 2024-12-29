@@ -11,7 +11,24 @@ $id = $_GET['id'];
 $current = $article->getById($id);
 
 if ($_POST) {
-    if ($article->update($id, $_POST['title'], $_POST['content'])) {
+    $title = $_POST['title'];
+    $content = $_POST['content'];
+    $gambarBaru = null;
+
+    // Handle file upload jika ada gambar baru
+    if (!empty($_FILES['gambar']['name'])) {
+        $uploadDir = 'uploads/';
+        $gambarBaru = basename($_FILES['gambar']['name']);
+        $targetFile = $uploadDir . $gambarBaru;
+
+        if (!move_uploaded_file($_FILES['gambar']['tmp_name'], $targetFile)) {
+            $_SESSION['message'] = "Gagal mengupload gambar baru.";
+            header("Location: index.php");
+            exit;
+        }
+    }
+
+    if ($article->update($id, $title, $content, $gambarBaru)) {
         $_SESSION['message'] = "Artikel berhasil diperbarui!";
     } else {
         $_SESSION['message'] = "Terjadi kesalahan saat memperbarui artikel.";
@@ -39,7 +56,7 @@ if ($_POST) {
             <div class="col">
                 <h1 class="mb-4">Edit Article</h1>
 
-                <form method="post">
+                <form method="post" enctype="multipart/form-data">
 
                     <div class="mb-3 row">
                         <label for="title" class="col-sm-2 col-form-label">Judul Artikel</label>
@@ -54,7 +71,18 @@ if ($_POST) {
                             <textarea name="content" id="content" class="form-control" rows="9"><?= $current['content'] ?></textarea>
                         </div>
                     </div>
-
+                    <div class="mb-3 row">
+                        <label for="gambar" class="col-sm-2 col-form-label">Gambar Lama</label>
+                        <div class="col-sm-8">
+                            <img src="uploads/<?= $current['gambar'] ?>" class="img-thumbnail" style="height: 200px" alt="">
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <label for="gambar" class="col-sm-2 col-form-label">Ganti Gambar</label>
+                        <div class="col-sm-8">
+                            <input type="file" name="gambar" class="form-control">
+                        </div>
+                    </div>
                     <div class="mb-3 row">
                         <div class="col-sm-2">
                         </div>

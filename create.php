@@ -1,14 +1,36 @@
 <?php
 require_once 'classes/Database.php';
 require_once 'classes/Article.php';
+require_once 'classes/Kategori.php';
 
 session_start();
 
 $db = (new Database())->getConnection();
 $article = new Article($db);
+$kat = new Kategori($db);
+
+$kategori = $kat->read();
 
 if ($_POST) {
-    if ($article->create($_POST['title'], $_POST['content'])) {
+    $title = $_POST['title'];
+    $content = $_POST['content'];
+    $idKategori = $_POST['id_kategori'];
+    $gambar = null;
+
+    // Handle file upload
+    if (!empty($_FILES['gambar']['name'])) {
+        $uploadDir = 'uploads/';
+        $gambar = basename($_FILES['gambar']['name']);
+        $targetFile = $uploadDir . $gambar;
+
+        if (!move_uploaded_file($_FILES['gambar']['tmp_name'], $targetFile)) {
+            $_SESSION['message'] = "Gagal mengupload gambar.";
+            header("Location: index.php");
+            exit;
+        }
+    }
+
+    if ($article->create($title, $content, $idKategori, $gambar)) {
         $_SESSION['message'] = "Artikel berhasil disimpan!";
     } else {
         $_SESSION['message'] = "Terjadi kesalahan saat menyimpan artikel!";
@@ -36,7 +58,7 @@ if ($_POST) {
             <div class="col">
                 <h1 class="mb-4">Add Article</h1>
 
-                <form method="post">
+                <form method="post" enctype="multipart/form-data">
 
                     <div class="mb-3 row">
                         <label for="title" class="col-sm-2 col-form-label">Judul Artikel</label>
@@ -46,9 +68,27 @@ if ($_POST) {
                     </div>
 
                     <div class="mb-3 row">
+                        <label for="id-kategori" class="col-sm-2 col-form-label">Kategori Artikel</label>
+                        <div class="col-sm-8">
+                            <select name="id_kategori" id="id-kategori" class="form-control">
+                                <?php while ($row = $kategori->fetch(PDO::FETCH_ASSOC)): ?>
+                                    <option value="<?= $row['id_kategori'] ?>"><?= $row['nama_kategori'] ?></option>
+                                <?php endwhile ?>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row">
                         <label for="content" class="col-sm-2 col-form-label">Konten</label>
                         <div class="col-sm-8">
                             <textarea name="content" id="content" class="form-control" rows="9"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row">
+                        <label for="gambar" class="col-sm-2 col-form-label">Gambar</label>
+                        <div class="col-sm-8">
+                            <input type="file" name="gambar" class="form-control">
                         </div>
                     </div>
 

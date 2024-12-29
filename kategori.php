@@ -1,13 +1,13 @@
 <?php
 require_once 'classes/Database.php';
-require_once 'classes/Article.php';
+require_once 'classes/Kategori.php';
 
 session_start();
 
 $db = (new Database())->getConnection();
-$article = new Article($db);
+$kat = new Kategori($db);
 
-$articles = $article->read();
+$kategori = $kat->read();
 ?>
 
 <!doctype html>
@@ -26,8 +26,8 @@ $articles = $article->read();
     <div class="container mt-5">
         <div class="row">
             <div class="col">
-                <h1>Articles</h1>
-                <a href="create.php" class="btn btn-sm btn-primary mb-2 mt-2">Add Article</a>
+                <h1>Kategori</h1>
+                <a href="create.php" class="btn btn-sm btn-primary mb-2 mt-2">Tambah Kategori</a>
 
                 <!-- menampilkan alert jika ada session message -->
                 <?php if (isset($_SESSION['message'])): ?>
@@ -44,29 +44,25 @@ $articles = $article->read();
                     <thead>
                         <tr>
                             <th>No</th>
-                            <th>Gambar</th>
-                            <th>Judul</th>
-                            <th>Penulis</th>
-                            <th>Kategori</th>
-                            <th>Tanggal</th>
+                            <th>Nama Kategori</th>
+                            <th>Status</th>
+                            <th>Created at</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php
                         $no = 1;
-                        while ($row = $articles->fetch(PDO::FETCH_ASSOC)):
+                        while ($row = $kategori->fetch(PDO::FETCH_ASSOC)):
                         ?>
                             <tr>
                                 <td><?= $no++ ?></td>
-                                <td><img src="uploads/<?= $row['gambar'] ?>" class="img-thumbnail" style="height: 80px;" alt=""></td>
-                                <td><?= $row['title'] ?></td>
-                                <td><?= $row['nama_user'] ?></td>
                                 <td><?= $row['nama_kategori'] ?></td>
+                                <td><?= $row['status'] ?></td>
                                 <td><?= $row['created_at'] ?></td>
                                 <td>
-                                    <a href="edit.php?id=<?= $row['id'] ?>" class="btn btn-sm btn-warning">Edit</a>
-                                    <a href="delete.php?id=<?= $row['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Apakah anda yakin akan menghapus artikel ini?')">Delete</a>
+                                    <a href="kategori_edit.php?id=<?= $row['id'] ?>" class="btn btn-sm btn-warning">Edit</a>
+                                    <a href="kategori_delete.php?id=<?= $row['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Apakah anda yakin akan menghapus artikel ini?')">Delete</a>
                                 </td>
                             </tr>
                         <?php endwhile ?>
